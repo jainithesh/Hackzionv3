@@ -1,0 +1,15 @@
+# Python Virtual Environment
+.venv/
+__pycache__/
+*.pyc
+
+# Node/NPM Packages
+node_modules/
+target_app/node_modules/
+
+# Secrets & API Keys
+.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
