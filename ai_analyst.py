@@ -26,7 +26,7 @@ def get_threat_explanation(vulnerability_count):
         return response.choices[0].message.content
 
     except Exception as e:
-        print(f"--- FAILED on Groq ---")
+        print("--- FAILED on Groq ---")
         print(f"Exact Error: {e}")
         print("\n[!] API BLOCKED: USING OFFLINE DEMO FALLBACK FOR JUDGES [!]\n")
         return "Critical vulnerability detected in outdated dependencies (axios, lodash). Exploitation could allow attackers to execute arbitrary code via Prototype Pollution or trigger a severe Denial of Service (DoS) crash, leading to massive downtime."
