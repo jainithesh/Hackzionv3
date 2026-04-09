@@ -1,11 +1,10 @@
 import streamlit as st
 import engine
 import ai_analyst
-import ai_sast  # <--- Make sure this is imported if you add a SAST tab later!
+import ai_sast  # <--- Integrated SAST Engine
 import time
 import os
 
-# ... [Keep all your amazing CSS and UI code exactly as you wrote it] ...
 st.set_page_config(
     page_title="HackZion v3 | Security Engine",
     page_icon="🛡️",
@@ -298,15 +297,20 @@ st.markdown(
 )
 
 
-# ── TABS ─────────────────────────────────────────────────────────────────────
-dash_tab, ai_tab, log_tab, intel_tab = st.tabs(
-    ["⚡ LIVE DASHBOARD", "🧠 AI ANALYST", "📜 SYSTEM LOGS", "🗺️ THREAT INTEL"]
+# ── TABS (ADDED SAST TAB) ────────────────────────────────────────────────────
+dash_tab, ai_tab, log_tab, intel_tab, sast_tab = st.tabs(
+    [
+        "⚡ LIVE DASHBOARD",
+        "🧠 AI ANALYST",
+        "📜 SYSTEM LOGS",
+        "🗺️ THREAT INTEL",
+        "🛡️ AI-SAST (ZERO-DAY)",
+    ]
 )
 
 
 # ── DASHBOARD TAB ─────────────────────────────────────────────────────────────
 with dash_tab:
-    # ── Metric Row ──
     col1, col2, col3, col4 = st.columns(4)
     sys_status = col1.empty()
     threat_status = col2.empty()
@@ -320,7 +324,6 @@ with dash_tab:
 
     st.divider()
 
-    # ── Vulnerability Preview ──
     section_header("🎯", "Known Vulnerability Profile")
     v_col1, v_col2 = st.columns(2)
 
@@ -365,8 +368,6 @@ with dash_tab:
         )
 
     st.divider()
-
-    # ── THE BIG BUTTON ──
     st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
 
     if st.button(
@@ -379,8 +380,7 @@ with dash_tab:
         ) as status:
             # Phase 1
             st.markdown(
-                """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff">
-                🔍 PHASE 1 · SCANNING TARGET PROJECT...</div>""",
+                """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff">🔍 PHASE 1 · SCANNING TARGET PROJECT...</div>""",
                 unsafe_allow_html=True,
             )
             prog = st.progress(0)
@@ -392,7 +392,6 @@ with dash_tab:
 
             if has_vulns:
                 prog.progress(35)
-
                 sys_status.metric(
                     "System Status", "COMPROMISED", "⚠ Critical", delta_color="inverse"
                 )
@@ -405,8 +404,7 @@ with dash_tab:
 
                 st.markdown(
                     f"""
-                <div style="background:#1a040a;border:1px solid #ff2d55;border-radius:2px;
-                            padding:0.8rem 1rem;margin:0.5rem 0">
+                <div style="background:#1a040a;border:1px solid #ff2d55;border-radius:2px;padding:0.8rem 1rem;margin:0.5rem 0">
                     <span style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#ff2d55">
                         ⚠ ALERT: {has_vulns} HIGH-SEVERITY VULNERABILITIES DETECTED IN TARGET DEPENDENCIES
                     </span>
@@ -415,10 +413,9 @@ with dash_tab:
                     unsafe_allow_html=True,
                 )
 
-                # Phase 2 – AI
+                # Phase 2
                 st.markdown(
-                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">
-                    🧠 PHASE 2 · GENERATING AI THREAT INTELLIGENCE...</div>""",
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">🧠 PHASE 2 · GENERATING AI THREAT INTELLIGENCE...</div>""",
                     unsafe_allow_html=True,
                 )
                 for i in range(35, 55):
@@ -429,32 +426,22 @@ with dash_tab:
 
                 with ai_tab:
                     st.markdown(
-                        """
-                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;
-                                color:#ffd60a;letter-spacing:0.1em;margin-bottom:0.5rem">
-                        ◈ GENERATING REAL-TIME THREAT INTELLIGENCE...
-                    </div>
-                    """,
+                        """<div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#ffd60a;letter-spacing:0.1em;margin-bottom:0.5rem">◈ GENERATING REAL-TIME THREAT INTELLIGENCE...</div>""",
                         unsafe_allow_html=True,
                     )
                     st.markdown(
                         f"""
-                    <div style="background:#040f1c;border:1px solid #00f5ff44;border-left:3px solid #00f5ff;
-                                border-radius:2px;padding:1.2rem 1.5rem;margin-top:0.5rem">
-                        <div style="font-family:'Orbitron',monospace;font-size:0.75rem;color:#00f5ff;
-                                    letter-spacing:0.2em;margin-bottom:0.8rem">🤖 GROQ (LLAMA 3) THREAT REPORT</div>
-                        <div style="font-family:'Rajdhani',sans-serif;font-size:1rem;color:#c8e6f0;line-height:1.6">
-                            {ai_report}
-                        </div>
+                    <div style="background:#040f1c;border:1px solid #00f5ff44;border-left:3px solid #00f5ff;border-radius:2px;padding:1.2rem 1.5rem;margin-top:0.5rem">
+                        <div style="font-family:'Orbitron',monospace;font-size:0.75rem;color:#00f5ff;letter-spacing:0.2em;margin-bottom:0.8rem">🤖 GROQ (LLAMA 3) THREAT REPORT</div>
+                        <div style="font-family:'Rajdhani',sans-serif;font-size:1rem;color:#c8e6f0;line-height:1.6">{ai_report}</div>
                     </div>
                     """,
                         unsafe_allow_html=True,
                     )
 
-                # Phase 3 – Backup
+                # Phase 3
                 st.markdown(
-                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">
-                    💾 PHASE 3 · CREATING SECURE SYSTEM BACKUP...</div>""",
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">💾 PHASE 3 · CREATING SECURE SYSTEM BACKUP...</div>""",
                     unsafe_allow_html=True,
                 )
                 engine.backup_file()
@@ -462,15 +449,13 @@ with dash_tab:
                     prog.progress(i + 1)
                     time.sleep(0.02)
                 st.markdown(
-                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#00ff88">
-                    ✓ package.json backed up successfully</div>""",
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#00ff88">✓ package.json backed up successfully</div>""",
                     unsafe_allow_html=True,
                 )
 
-                # Phase 4 – Patch
+                # Phase 4
                 st.markdown(
-                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">
-                    🔧 PHASE 4 · DEPLOYING AUTONOMOUS PATCHES...</div>""",
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">🔧 PHASE 4 · DEPLOYING AUTONOMOUS PATCHES...</div>""",
                     unsafe_allow_html=True,
                 )
                 engine.apply_patch_and_verify()
@@ -478,13 +463,11 @@ with dash_tab:
                     prog.progress(i + 1)
                     time.sleep(0.03)
 
-                # ── SUCCESS ──
                 status.update(
                     label="✅ DEFENSE SEQUENCE COMPLETE — SYSTEM SECURED",
                     state="complete",
                     expanded=False,
                 )
-
                 sys_status.metric(
                     "System Status", "SECURE", "✓ Healed", delta_color="normal"
                 )
@@ -500,15 +483,9 @@ with dash_tab:
 
                 st.markdown(
                     """
-                <div style="background:#040f1c;border:1px solid #00ff88;border-radius:2px;
-                            padding:1rem 1.5rem;margin-top:1rem;text-align:center">
-                    <div style="font-family:'Orbitron',monospace;font-size:1rem;color:#00ff88;
-                                text-shadow:0 0 15px #00ff88;letter-spacing:0.2em">
-                        ✓ SYSTEM SECURED · ZERO THREATS REMAINING
-                    </div>
-                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;margin-top:6px">
-                        axios patched → latest stable &nbsp;·&nbsp; lodash patched → latest stable &nbsp;·&nbsp; test suite passed &nbsp;·&nbsp; rollback bypassed
-                    </div>
+                <div style="background:#040f1c;border:1px solid #00ff88;border-radius:2px;padding:1rem 1.5rem;margin-top:1rem;text-align:center">
+                    <div style="font-family:'Orbitron',monospace;font-size:1rem;color:#00ff88;text-shadow:0 0 15px #00ff88;letter-spacing:0.2em">✓ SYSTEM SECURED · ZERO THREATS REMAINING</div>
+                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;margin-top:6px">axios patched → latest stable &nbsp;·&nbsp; lodash patched → latest stable &nbsp;·&nbsp; test suite passed &nbsp;·&nbsp; rollback bypassed</div>
                 </div>
                 """,
                     unsafe_allow_html=True,
@@ -543,8 +520,7 @@ with dash_tab:
                         c = colors.get(level, "4a7a8a")
                         st.markdown(
                             f"""
-                        <div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;
-                                    padding:0.4rem 0;border-bottom:1px solid #0ff1">
+                        <div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;padding:0.4rem 0;border-bottom:1px solid #0ff1">
                             <span style="color:#{c};margin-right:12px">[{level}]</span>
                             <span style="color:#c8e6f0">{msg}</span>
                         </div>
@@ -587,8 +563,7 @@ with ai_tab:
             <span style="color:#ffd60a">Live Dashboard</span> tab to populate this panel with a live AI report.
         </div>
     </div>
-    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;
-                text-align:center;padding:1rem;border:1px dashed #0ff2;border-radius:2px">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;text-align:center;padding:1rem;border:1px dashed #0ff2;border-radius:2px">
         ◈ AWAITING SWEEP TRIGGER ◈
     </div>
     """,
@@ -601,8 +576,7 @@ with log_tab:
     section_header("📜", "System Logs")
     st.markdown(
         """
-    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;
-                text-align:center;padding:1rem;border:1px dashed #0ff2;border-radius:2px">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;text-align:center;padding:1rem;border:1px dashed #0ff2;border-radius:2px">
         ◈ LOGS WILL APPEAR AFTER SWEEP EXECUTION ◈
     </div>
     """,
@@ -613,7 +587,6 @@ with log_tab:
 # ── THREAT INTEL TAB ──────────────────────────────────────────────────────────
 with intel_tab:
     section_header("🗺️", "Threat Intelligence Overview")
-
     i_col1, i_col2 = st.columns([3, 2])
 
     with i_col1:
@@ -639,12 +612,10 @@ with intel_tab:
         for pkg, cur, safe, cves, sev, col in deps:
             st.markdown(
                 f"""
-            <div style="background:#061120;border:1px solid #{col}44;border-radius:2px;
-                        padding:0.9rem 1.1rem;margin-bottom:0.5rem">
+            <div style="background:#061120;border:1px solid #{col}44;border-radius:2px;padding:0.9rem 1.1rem;margin-bottom:0.5rem">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                     <span style="font-family:'Orbitron',monospace;font-size:0.9rem;color:#{col}">{pkg}</span>
-                    <span style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;padding:2px 8px;
-                                 border:1px solid #{col};color:#{col}">{sev}</span>
+                    <span style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;padding:2px 8px;border:1px solid #{col};color:#{col}">{sev}</span>
                 </div>
                 <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a">
                     INSTALLED: <span style="color:#ff2d55">{cur}</span> &nbsp;→&nbsp;
@@ -672,8 +643,7 @@ with intel_tab:
             st.markdown(
                 f"""
             <div style="display:flex;align-items:center;gap:12px;padding:0.5rem 0;border-bottom:1px solid #0ff1">
-                <div style="font-family:'Orbitron',monospace;font-size:0.75rem;color:#{col};
-                            min-width:24px;text-align:center">{num}</div>
+                <div style="font-family:'Orbitron',monospace;font-size:0.75rem;color:#{col};min-width:24px;text-align:center">{num}</div>
                 <div>
                     <div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#{col}">{step}</div>
                     <div style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:#4a7a8a">{desc}</div>
@@ -683,16 +653,83 @@ with intel_tab:
                 unsafe_allow_html=True,
             )
 
-        st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
-        section_header("🔒", "Self-Healing Logic", "00ff88")
-        st.markdown(
-            """
-        <div style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:#4a7a8a;line-height:1.8">
-            If <span style="color:#ff2d55">npm test FAILS</span> post-patch,<br>
-            the engine <span style="color:#ffd60a">atomically restores</span><br>
-            the pre-patch backup — ensuring<br>
-            <span style="color:#00ff88">zero broken deployments</span>.
-        </div>
-        """,
-            unsafe_allow_html=True,
+
+# ── AI-SAST (ZERO-DAY) TAB ────────────────────────────────────────────────────
+with sast_tab:
+    section_header("🛡️", "AI-SAST Zero-Day Hunter")
+    st.markdown(
+        """
+    <div style="font-family:'Rajdhani',sans-serif;font-size:0.95rem;color:#c8e6f0;line-height:1.6;margin-bottom:1rem">
+        Upload a raw <span style="color:#00f5ff">.js file</span> or select a test scenario below. The file is temporarily written to a quarantine zone, where <strong>Groq LLaMA-3</strong> reads the raw Abstract Syntax Tree to hunt for zero-day payloads, malicious obfuscation, and dangerous evaluation patterns.
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    colA, colB = st.columns(2)
+
+    with colA:
+        test_pkg = st.selectbox(
+            "🧪 Simulate Target Environment",
+            [
+                "React-Colors-Utils (Zero-Day Malicious)",
+                "Express Boilerplate (Safe)",
+                "Axios Custom (Suspicious)",
+            ],
         )
+
+    with colB:
+        uploaded_file = st.file_uploader("📂 Or Upload Custom .js File", type=["js"])
+
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
+
+    if st.button("🔍 RUN HEURISTIC SAST SCAN", use_container_width=True):
+        with st.status("Analyzing Abstract Syntax Tree...", expanded=True) as status:
+            st.write("Initializing LLaMA-3 Security Ruleset...")
+            time.sleep(0.5)
+            st.write("Extracting payload logic...")
+
+            target_file_path = "temp_quarantine_scan.js"
+
+            # File handling logic: priority goes to uploaded files
+            if uploaded_file is not None:
+                st.write("Writing uploaded file to ephemeral quarantine sandbox...")
+                with open(target_file_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+            else:
+                st.write(f"Generating mock sandbox for '{test_pkg}'...")
+                # Generate mock code based on dropdown selection
+                if "Malicious" in test_pkg:
+                    code_content = "const target = Buffer.from('cHJvY2Vzcy5lbnYuR1JPUV9BUElfS0VZ', 'base64').toString('utf-8');\neval(target);"
+                elif "Safe" in test_pkg:
+                    code_content = "const express = require('express');\nconst app = express();\napp.listen(3000, () => console.log('Ready'));"
+                else:
+                    code_content = "var config = { validateStatus: function (status) { return status >= 200 && status < 300; } };"
+
+                with open(target_file_path, "w") as f:
+                    f.write(code_content)
+
+            time.sleep(0.5)
+            st.write("Pushing context to Groq API...")
+
+            # Execute the AI SAST Scan
+            is_safe, sast_report = ai_sast.analyze_raw_code(target_file_path)
+
+            # Cleanup the temporary file immediately after reading
+            if os.path.exists(target_file_path):
+                os.remove(target_file_path)
+
+            status.update(label="SAST Audit Complete", state="complete", expanded=False)
+
+        # Display the Verdict
+        st.divider()
+        if is_safe:
+            st.success(
+                "✅ **VERDICT: SAFE** - Code passes heuristic behavioral analysis."
+            )
+        else:
+            st.error(
+                "🚨 **VERDICT: MALICIOUS/SUSPICIOUS** - Installation strictly blocked."
+            )
+
+        st.code(sast_report, language="text")
