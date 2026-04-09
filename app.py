@@ -22,7 +22,7 @@ with st.sidebar:
         delta_color="off",
     )
     st.divider()
-    st.caption("Powered by Google Gemini & npm audit")
+    st.caption("Powered by Groq (LLaMA 3) & npm audit")
 
 # 3. Main Header
 st.title("🛡️ Autonomous Vulnerability Manager")
@@ -75,7 +75,7 @@ with dash_tab:
                 with ai_tab:
                     st.warning("Generating real-time threat intelligence...")
                     ai_report = ai_analyst.get_threat_explanation(has_vulns)
-                    st.info(f"**🤖 Gemini 1.5 Threat Report:**\n\n{ai_report}")
+                    st.info(f"**🤖 Groq (LLaMA 3) Threat Report:**\n\n{ai_report}")
 
                 st.write("💾 **Phase 2: Creating secure system backup...**")
                 engine.backup_file()
