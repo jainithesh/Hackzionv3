@@ -1,7 +1,7 @@
 import streamlit as st
 import engine
 import ai_analyst
-import ai_sast  # <--- Integrated SAST Engine
+import ai_sast
 import time
 import os
 
@@ -18,7 +18,6 @@ st.markdown(
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
 
-/* ── Root variables ── */
 :root {
     --bg:       #020b14;
     --panel:    #061120;
@@ -31,26 +30,22 @@ st.markdown(
     --text:     #c8e6f0;
 }
 
-/* ── Base resets ── */
 html, body, [class*="css"] {
     background-color: var(--bg) !important;
     color: var(--text) !important;
     font-family: 'Rajdhani', sans-serif !important;
 }
 
-/* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 2px; }
 
-/* ── Sidebar ── */
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, #040e1a 0%, #020b14 100%) !important;
     border-right: 1px solid var(--border) !important;
 }
 [data-testid="stSidebar"] * { color: var(--text) !important; }
 
-/* ── Metric cards ── */
 [data-testid="stMetric"] {
     background: linear-gradient(135deg, #061828 0%, #040f1c 100%) !important;
     border: 1px solid var(--border) !important;
@@ -71,7 +66,6 @@ html, body, [class*="css"] {
 [data-testid="stMetricValue"] { font-family: 'Orbitron', monospace !important; font-size: 1.4rem !important; color: var(--cyan) !important; }
 [data-testid="stMetricDelta"] { font-family: 'Share Tech Mono', monospace !important; font-size: 0.75rem !important; }
 
-/* ── Tabs ── */
 [data-testid="stTabs"] button {
     font-family: 'Share Tech Mono', monospace !important;
     font-size: 0.8rem !important;
@@ -86,7 +80,6 @@ html, body, [class*="css"] {
     text-shadow: 0 0 8px var(--cyan) !important;
 }
 
-/* ── Primary button ── */
 [data-testid="stButton"] > button[kind="primary"] {
     background: transparent !important;
     border: 1px solid var(--red) !important;
@@ -106,7 +99,6 @@ html, body, [class*="css"] {
     transform: translateY(-1px) !important;
 }
 
-/* ── Secondary buttons ── */
 [data-testid="stButton"] > button:not([kind="primary"]) {
     background: transparent !important;
     border: 1px solid var(--border) !important;
@@ -117,7 +109,6 @@ html, body, [class*="css"] {
     border-radius: 2px !important;
 }
 
-/* ── Alert / Info / Warning ── */
 [data-testid="stAlert"] {
     border-radius: 2px !important;
     border-left-width: 3px !important;
@@ -125,7 +116,6 @@ html, body, [class*="css"] {
     font-size: 0.85rem !important;
 }
 
-/* ── Status box ── */
 [data-testid="stStatusWidget"] {
     background: var(--panel) !important;
     border: 1px solid var(--border) !important;
@@ -133,21 +123,10 @@ html, body, [class*="css"] {
     font-family: 'Share Tech Mono', monospace !important;
 }
 
-/* ── Divider ── */
 hr { border-color: var(--border) !important; }
-
-/* ── Captions ── */
 [data-testid="stCaption"] { font-family: 'Share Tech Mono', monospace !important; color: var(--dim) !important; font-size: 0.7rem !important; }
-
-/* ── Progress bar ── */
 [data-testid="stProgressBar"] > div { background: var(--cyan) !important; box-shadow: 0 0 8px var(--cyan) !important; }
-
-/* ── Expander ── */
-[data-testid="stExpander"] {
-    background: var(--panel) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 2px !important;
-}
+[data-testid="stExpander"] { background: var(--panel) !important; border: 1px solid var(--border) !important; border-radius: 2px !important; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -187,35 +166,28 @@ with st.sidebar:
     """,
         unsafe_allow_html=True,
     )
-
     st.divider()
-
     st.markdown(
         f"""
     <div style="margin-bottom:0.5rem">
         <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:#4a7a8a;letter-spacing:0.15em">REMEDIATION ENGINE</div>
-        <div style="font-family:'Orbitron',monospace;font-size:1.6rem;color:#00ff88;
-                    text-shadow:0 0 15px #00ff88">ONLINE</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.6rem;color:#00ff88;text-shadow:0 0 15px #00ff88">ONLINE</div>
         {badge("● ACTIVE", "00ff88")}
     </div>
     """,
         unsafe_allow_html=True,
     )
-
     st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
-
     st.markdown(
         f"""
     <div style="margin-bottom:0.5rem">
         <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:#4a7a8a;letter-spacing:0.15em">TARGET DIRECTORY</div>
-        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;color:#00f5ff;
-                    text-shadow:0 0 10px #00f5ff88">./target_app</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;color:#00f5ff;text-shadow:0 0 10px #00f5ff88">./target_app</div>
         {badge("⬆ LOCKED", "ffd60a")}
     </div>
     """,
         unsafe_allow_html=True,
     )
-
     st.divider()
 
     section_header("⚡", "Threat Vector Matrix", "ff2d55")
@@ -241,13 +213,11 @@ with st.sidebar:
         """,
             unsafe_allow_html=True,
         )
-
     st.divider()
     st.markdown(
         """
     <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:#4a7a8a;text-align:center;letter-spacing:0.1em">
-        POWERED BY GROQ (LLAMA 3) & NPM AUDIT<br>
-        <span style="color:#00f5ff44">━━━━━━━━━━━━━━━━━━━━</span>
+        POWERED BY GROQ (LLAMA 3) & NPM AUDIT<br><span style="color:#00f5ff44">━━━━━━━━━━━━━━━━━━━━</span>
     </div>
     """,
         unsafe_allow_html=True,
@@ -260,54 +230,46 @@ st.markdown(
 <div style="padding:1.5rem 0 0.5rem">
     <div style="display:flex;align-items:center;gap:16px;margin-bottom:4px">
         <div style="font-family:'Orbitron',monospace;font-size:2.2rem;font-weight:900;
-                    color:#00f5ff;text-shadow:0 0 30px #00f5ff,0 0 60px #00f5ff44;
-                    letter-spacing:0.05em">
+                    color:#00f5ff;text-shadow:0 0 30px #00f5ff,0 0 60px #00f5ff44;letter-spacing:0.05em">
             AUTONOMOUS VULNERABILITY MANAGER
         </div>
     </div>
-    <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#4a7a8a;
-                letter-spacing:0.2em">
-        ◈ REAL-TIME THREAT DETECTION &nbsp;·&nbsp; AI ANALYSIS &nbsp;·&nbsp; SELF-HEALING PATCH DEPLOYMENT
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#4a7a8a;letter-spacing:0.2em">
+        ◈ REAL-TIME THREAT DETECTION &nbsp;·&nbsp; AI SAST ANALYSIS &nbsp;·&nbsp; SELF-HEALING PATCH DEPLOYMENT
     </div>
 </div>
 """,
     unsafe_allow_html=True,
 )
 
-# Live clock strip
+
+# ── TARGET SELECTION CONFIGURATOR ─────────────────────────────────────────────
 st.markdown(
-    """
-<div style="display:flex;gap:2rem;padding:0.6rem 0;margin-bottom:0.5rem;
-            border-top:1px solid #0ff2;border-bottom:1px solid #0ff2">
-    <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a">
-        SYSTEM: <span style="color:#00f5ff">HACKZION-NODE-DEFENSE</span>
-    </span>
-    <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a">
-        TARGET: <span style="color:#00ff88">axios@0.18.0 · lodash@4.17.15</span>
-    </span>
-    <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a">
-        PROTOCOL: <span style="color:#ffd60a">AUTONOMOUS SWEEP v3</span>
-    </span>
-    <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a">
-        MODE: <span style="color:#ff2d55">ACTIVE DEFENSE</span>
-    </span>
-</div>
-""",
+    "<div style='background:#040f1c; border:1px solid #0ff2; border-radius:4px; padding:1.5rem; margin-bottom:1.5rem;'>",
     unsafe_allow_html=True,
 )
+section_header("⚙️", "Mission Control: Target Acquisition")
+
+col_target1, col_target2 = st.columns(2)
+with col_target1:
+    target_scenario = st.selectbox(
+        "1. Select Pre-Configured Target Environment",
+        [
+            "Legacy Project (axios@0.18.0 & lodash@4.17.15)",
+            "New Upload: React-Colors-Utils (Zero-Day Malicious)",
+            "New Upload: Express Boilerplate (Safe)",
+        ],
+    )
+with col_target2:
+    custom_upload = st.file_uploader("2. Or Upload Custom Package (.js)", type=["js"])
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 
-# ── TABS (ADDED SAST TAB) ────────────────────────────────────────────────────
-dash_tab, ai_tab, log_tab, intel_tab, sast_tab = st.tabs(
-    [
-        "⚡ LIVE DASHBOARD",
-        "🧠 AI ANALYST",
-        "📜 SYSTEM LOGS",
-        "🗺️ THREAT INTEL",
-        "🛡️ AI-SAST (ZERO-DAY)",
-    ]
+# ── TABS ──────────────────────────────────────────────────────────────────────
+dash_tab, ai_tab, log_tab, intel_tab = st.tabs(
+    ["⚡ FULL SPECTRUM DASHBOARD", "🧠 AI ANALYST", "📜 SYSTEM LOGS", "🗺️ THREAT INTEL"]
 )
-
 
 # ── DASHBOARD TAB ─────────────────────────────────────────────────────────────
 with dash_tab:
@@ -321,82 +283,120 @@ with dash_tab:
     threat_status.metric("Active Threats", "Pending Scan", "Awaiting")
     patch_status.metric("Packages Patched", "0", "Ready")
     score_status.metric("Security Score", "—", "Pre-Scan")
-
     st.divider()
 
-    section_header("🎯", "Known Vulnerability Profile")
-    v_col1, v_col2 = st.columns(2)
-
-    with v_col1:
-        st.markdown(
-            """
-        <div style="background:#061120;border:1px solid #ff2d5544;border-radius:2px;padding:1rem;margin-bottom:0.5rem">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-                <div>
-                    <div style="font-family:'Orbitron',monospace;font-size:0.9rem;color:#ff2d55">axios@0.18.0</div>
-                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:#4a7a8a;margin-top:4px">CVE-2021-3749 · SSRF · ReDoS</div>
-                </div>
-                <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;padding:4px 10px;
-                            border:1px solid #ff2d55;color:#ff2d55;border-radius:2px">HIGH</div>
-            </div>
-            <div style="margin-top:0.6rem;font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a">
-                Exploit Vector: Network · CVSS: 7.5
-            </div>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
-
-    with v_col2:
-        st.markdown(
-            """
-        <div style="background:#061120;border:1px solid #ffd60a44;border-radius:2px;padding:1rem;margin-bottom:0.5rem">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-                <div>
-                    <div style="font-family:'Orbitron',monospace;font-size:0.9rem;color:#ffd60a">lodash@4.17.15</div>
-                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:#4a7a8a;margin-top:4px">CVE-2021-23337 · Prototype Pollution</div>
-                </div>
-                <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;padding:4px 10px;
-                            border:1px solid #ffd60a;color:#ffd60a;border-radius:2px">HIGH</div>
-            </div>
-            <div style="margin-top:0.6rem;font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a">
-                Exploit Vector: Local · CVSS: 7.2
-            </div>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
-
-    st.divider()
-    st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
-
+    # ── THE BIG UNIFIED BUTTON ──
     if st.button(
-        "🚨  TRIGGER AUTONOMOUS SECURITY SWEEP",
+        "🚨 INITIATE FULL SPECTRUM SECURITY AUDIT",
         type="primary",
         use_container_width=True,
     ):
         with st.status(
-            "⚡ INITIATING CYBER DEFENSE SEQUENCE...", expanded=True
+            "⚡ EXECUTING ZERO-TRUST CYBER DEFENSE SEQUENCE...", expanded=True
         ) as status:
-            # Phase 1
+            prog = st.progress(0)
+
+            # --- PREP PHASE: Write Target to Quarantine ---
+            target_file_path = "temp_quarantine_scan.js"
+            if custom_upload is not None:
+                with open(target_file_path, "wb") as f:
+                    f.write(custom_upload.getbuffer())
+            else:
+                if "Malicious" in target_scenario:
+                    code_content = "const target = Buffer.from('cHJvY2Vzcy5lbnYuR1JPUV9BUElfS0VZ', 'base64').toString('utf-8');\neval(target);"
+                elif "Safe" in target_scenario:
+                    code_content = "const express = require('express');\nconst app = express();\napp.listen(3000, () => console.log('Ready'));"
+                else:
+                    # Legacy project mock content
+                    code_content = "require('axios'); require('lodash');"
+                with open(target_file_path, "w") as f:
+                    f.write(code_content)
+
+            # --- PHASE 1: PROACTIVE SAST (ZERO-DAY HUNTER) ---
             st.markdown(
-                """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff">🔍 PHASE 1 · SCANNING TARGET PROJECT...</div>""",
+                """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#b388ff">
+                🛡️ PHASE 1 · PROACTIVE SAST (Heuristic Engine Analysis)...</div>""",
                 unsafe_allow_html=True,
             )
-            prog = st.progress(0)
-            for i in range(35):
+            for i in range(20):
                 prog.progress(i + 1)
                 time.sleep(0.02)
 
-            has_vulns = engine.run_vulnerability_scan()
+            is_safe, sast_report = ai_sast.analyze_raw_code(target_file_path)
 
-            if has_vulns:
-                prog.progress(35)
+            # Cleanup Quarantine
+            if os.path.exists(target_file_path):
+                os.remove(target_file_path)
+
+            if not is_safe:
+                # ZERO-DAY DETECTED - ABORT PIPELINE
+                prog.progress(100)
                 sys_status.metric(
-                    "System Status", "COMPROMISED", "⚠ Critical", delta_color="inverse"
+                    "System Status", "BLOCKED", "⚠ Critical", delta_color="inverse"
                 )
                 threat_status.metric(
-                    "Active Threats", "HIGH SEVERITY", "Detected", delta_color="inverse"
+                    "Active Threats", "ZERO-DAY", "Detected", delta_color="inverse"
+                )
+                score_status.metric(
+                    "Security Score", "0 / 100", "Critical", delta_color="inverse"
+                )
+
+                st.markdown(
+                    f"""
+                <div style="background:#1a040a;border:1px solid #ff2d55;border-radius:2px;padding:1rem;margin:1rem 0">
+                    <div style="font-family:'Orbitron',monospace;font-size:1rem;color:#ff2d55;letter-spacing:0.1em;margin-bottom:8px">
+                        🚨 ZERO-DAY THREAT DETECTED IN QUARANTINE
+                    </div>
+                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#c8e6f0">
+                        The AI-SAST Engine has blocked this payload from executing or installing. Pipeline halted.
+                    </div>
+                </div>
+                """,
+                    unsafe_allow_html=True,
+                )
+                st.code(sast_report, language="text")
+                status.update(
+                    label="🛑 PIPELINE HALTED — THREAT NEUTRALIZED IN QUARANTINE",
+                    state="error",
+                    expanded=True,
+                )
+                st.stop()  # Stops execution so it doesn't try to patch a virus
+
+            else:
+                st.markdown(
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#00ff88">
+                    ✓ AI-SAST Clearance Granted (No Obfuscation or Zero-Days found).</div>""",
+                    unsafe_allow_html=True,
+                )
+
+            # --- PHASE 2: REACTIVE AUDIT (CVE DB) ---
+            st.markdown(
+                """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">
+                🔍 PHASE 2 · REACTIVE CVE AUDIT (Scanning target_app)...</div>""",
+                unsafe_allow_html=True,
+            )
+            for i in range(20, 40):
+                prog.progress(i + 1)
+                time.sleep(0.02)
+
+            # Logic to determine if we run the actual engine or mock a safe pass
+            if "Legacy" in target_scenario or custom_upload:
+                has_vulns = engine.run_vulnerability_scan()
+            else:
+                has_vulns = 0  # Safe Express mock
+
+            if has_vulns > 0:
+                sys_status.metric(
+                    "System Status",
+                    "COMPROMISED",
+                    "⚠ Vulnerable",
+                    delta_color="inverse",
+                )
+                threat_status.metric(
+                    "Active Threats",
+                    f"{has_vulns} CVEs",
+                    "Detected",
+                    delta_color="inverse",
                 )
                 score_status.metric(
                     "Security Score", "24 / 100", "Critical", delta_color="inverse"
@@ -406,29 +406,26 @@ with dash_tab:
                     f"""
                 <div style="background:#1a040a;border:1px solid #ff2d55;border-radius:2px;padding:0.8rem 1rem;margin:0.5rem 0">
                     <span style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#ff2d55">
-                        ⚠ ALERT: {has_vulns} HIGH-SEVERITY VULNERABILITIES DETECTED IN TARGET DEPENDENCIES
+                        ⚠ ALERT: {has_vulns} HIGH-SEVERITY CVEs DETECTED IN TARGET DEPENDENCIES
                     </span>
                 </div>
                 """,
                     unsafe_allow_html=True,
                 )
 
-                # Phase 2
+                # --- PHASE 3: AI ANALYST (THREAT REPORT) ---
                 st.markdown(
-                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">🧠 PHASE 2 · GENERATING AI THREAT INTELLIGENCE...</div>""",
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#ffd60a;margin-top:0.8rem">
+                    🧠 PHASE 3 · GENERATING MANAGER INTEL REPORT...</div>""",
                     unsafe_allow_html=True,
                 )
-                for i in range(35, 55):
+                for i in range(40, 60):
                     prog.progress(i + 1)
                     time.sleep(0.02)
 
                 ai_report = ai_analyst.get_threat_explanation(has_vulns)
 
                 with ai_tab:
-                    st.markdown(
-                        """<div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#ffd60a;letter-spacing:0.1em;margin-bottom:0.5rem">◈ GENERATING REAL-TIME THREAT INTELLIGENCE...</div>""",
-                        unsafe_allow_html=True,
-                    )
                     st.markdown(
                         f"""
                     <div style="background:#040f1c;border:1px solid #00f5ff44;border-left:3px solid #00f5ff;border-radius:2px;padding:1.2rem 1.5rem;margin-top:0.5rem">
@@ -439,27 +436,30 @@ with dash_tab:
                         unsafe_allow_html=True,
                     )
 
-                # Phase 3
+                # --- PHASE 4: BACKUP ---
                 st.markdown(
-                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">💾 PHASE 3 · CREATING SECURE SYSTEM BACKUP...</div>""",
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">
+                    💾 PHASE 4 · CREATING SECURE SYSTEM BACKUP...</div>""",
                     unsafe_allow_html=True,
                 )
                 engine.backup_file()
-                for i in range(55, 70):
+                for i in range(60, 75):
                     prog.progress(i + 1)
                     time.sleep(0.02)
                 st.markdown(
-                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#00ff88">✓ package.json backed up successfully</div>""",
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#00ff88">
+                    ✓ Snapshot secured successfully.</div>""",
                     unsafe_allow_html=True,
                 )
 
-                # Phase 4
+                # --- PHASE 5: PATCH & SELF-HEAL ---
                 st.markdown(
-                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">🔧 PHASE 4 · DEPLOYING AUTONOMOUS PATCHES...</div>""",
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">
+                    🔧 PHASE 5 · DEPLOYING AUTONOMOUS PATCHES...</div>""",
                     unsafe_allow_html=True,
                 )
                 engine.apply_patch_and_verify()
-                for i in range(70, 100):
+                for i in range(75, 100):
                     prog.progress(i + 1)
                     time.sleep(0.03)
 
@@ -485,57 +485,20 @@ with dash_tab:
                     """
                 <div style="background:#040f1c;border:1px solid #00ff88;border-radius:2px;padding:1rem 1.5rem;margin-top:1rem;text-align:center">
                     <div style="font-family:'Orbitron',monospace;font-size:1rem;color:#00ff88;text-shadow:0 0 15px #00ff88;letter-spacing:0.2em">✓ SYSTEM SECURED · ZERO THREATS REMAINING</div>
-                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;margin-top:6px">axios patched → latest stable &nbsp;·&nbsp; lodash patched → latest stable &nbsp;·&nbsp; test suite passed &nbsp;·&nbsp; rollback bypassed</div>
+                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;margin-top:6px">Patches verified &nbsp;·&nbsp; test suite passed &nbsp;·&nbsp; rollback bypassed</div>
                 </div>
                 """,
                     unsafe_allow_html=True,
                 )
-
-                with log_tab:
-                    section_header("📜", "Audit Trail")
-                    log_entries = [
-                        ("INFO", "Autonomous sweep triggered by operator"),
-                        (
-                            "SCAN",
-                            f"npm audit detected {has_vulns} vulnerabilities (HIGH: 2)",
-                        ),
-                        ("AI", "Groq LLaMA-3 threat report generated successfully"),
-                        ("BACKUP", "package.json snapshot created at ./backups/"),
-                        ("PATCH", "npm audit fix applied — axios, lodash upgraded"),
-                        ("TEST", "npm test suite executed — ALL TESTS PASSED"),
-                        ("ROLLBACK", "Not required — patch validated successfully"),
-                        ("SECURE", "System status updated to SECURE"),
-                    ]
-                    colors = {
-                        "INFO": "00f5ff",
-                        "SCAN": "ffd60a",
-                        "AI": "b388ff",
-                        "BACKUP": "4a7a8a",
-                        "PATCH": "ffd60a",
-                        "TEST": "00ff88",
-                        "ROLLBACK": "4a7a8a",
-                        "SECURE": "00ff88",
-                    }
-                    for level, msg in log_entries:
-                        c = colors.get(level, "4a7a8a")
-                        st.markdown(
-                            f"""
-                        <div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;padding:0.4rem 0;border-bottom:1px solid #0ff1">
-                            <span style="color:#{c};margin-right:12px">[{level}]</span>
-                            <span style="color:#c8e6f0">{msg}</span>
-                        </div>
-                        """,
-                            unsafe_allow_html=True,
-                        )
-
                 st.balloons()
 
             else:
-                for i in range(35, 101):
+                # SAST Passed & No CVEs found
+                for i in range(40, 101):
                     prog.progress(i)
                     time.sleep(0.01)
                 status.update(
-                    label="✅ SCAN COMPLETE — NO THREATS FOUND",
+                    label="✅ SCAN COMPLETE — SYSTEM FULLY SECURE",
                     state="complete",
                     expanded=False,
                 )
@@ -549,6 +512,16 @@ with dash_tab:
                     "Security Score", "100/100", "Perfect", delta_color="normal"
                 )
 
+                st.markdown(
+                    """
+                <div style="background:#040f1c;border:1px solid #00ff88;border-radius:2px;padding:1rem 1.5rem;margin-top:1rem;text-align:center">
+                    <div style="font-family:'Orbitron',monospace;font-size:1rem;color:#00ff88;text-shadow:0 0 15px #00ff88;letter-spacing:0.2em">✓ ZERO THREATS DETECTED</div>
+                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;margin-top:6px">SAST cleared &nbsp;·&nbsp; No CVEs &nbsp;·&nbsp; Safe to deploy</div>
+                </div>
+                """,
+                    unsafe_allow_html=True,
+                )
+
 
 # ── AI ANALYST TAB ────────────────────────────────────────────────────────────
 with ai_tab:
@@ -558,31 +531,24 @@ with ai_tab:
     <div style="background:#040f1c;border:1px solid #0ff2;border-radius:2px;padding:1.2rem 1.5rem;margin-bottom:1rem">
         <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;margin-bottom:0.5rem">ANALYST ENGINE</div>
         <div style="font-family:'Rajdhani',sans-serif;font-size:1rem;color:#c8e6f0;line-height:1.6">
-            This module connects to <span style="color:#00f5ff">Groq's LLaMA 3</span> inference engine to generate
-            plain-English threat assessments from raw vulnerability data. Trigger a sweep from the
-            <span style="color:#ffd60a">Live Dashboard</span> tab to populate this panel with a live AI report.
+            This module connects to <span style="color:#00f5ff">Groq's LLaMA 3</span> inference engine. It analyzes known CVEs found during Phase 2 and generates plain-English risk assessments for leadership.
         </div>
-    </div>
-    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;text-align:center;padding:1rem;border:1px dashed #0ff2;border-radius:2px">
-        ◈ AWAITING SWEEP TRIGGER ◈
     </div>
     """,
         unsafe_allow_html=True,
     )
-
 
 # ── LOGS TAB ──────────────────────────────────────────────────────────────────
 with log_tab:
-    section_header("📜", "System Logs")
+    section_header("📜", "System Operations Log")
     st.markdown(
         """
     <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a;text-align:center;padding:1rem;border:1px dashed #0ff2;border-radius:2px">
-        ◈ LOGS WILL APPEAR AFTER SWEEP EXECUTION ◈
+        ◈ LIVE LOG STREAM ACTIVE ◈
     </div>
     """,
         unsafe_allow_html=True,
     )
-
 
 # ── THREAT INTEL TAB ──────────────────────────────────────────────────────────
 with intel_tab:
@@ -590,7 +556,7 @@ with intel_tab:
     i_col1, i_col2 = st.columns([3, 2])
 
     with i_col1:
-        section_header("📦", "Dependency Attack Surface", "ffd60a")
+        section_header("📦", "Known Dependency Risk", "ffd60a")
         deps = [
             (
                 "axios",
@@ -621,23 +587,19 @@ with intel_tab:
                     INSTALLED: <span style="color:#ff2d55">{cur}</span> &nbsp;→&nbsp;
                     PATCHED:   <span style="color:#00ff88">{safe}</span>
                 </div>
-                <div style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:#4a7a8a;margin-top:4px">
-                    VECTORS: {cves}
-                </div>
             </div>
             """,
                 unsafe_allow_html=True,
             )
 
     with i_col2:
-        section_header("⚙️", "Engine Architecture", "00ff88")
+        section_header("⚙️", "Zero-Trust Architecture", "00ff88")
         steps = [
-            ("01", "npm audit", "Scans dependency tree", "00f5ff"),
-            ("02", "Backup", "Snapshots package.json", "4a7a8a"),
-            ("03", "npm audit fix", "Applies safe upgrades", "ffd60a"),
-            ("04", "npm test", "Validates integrity", "00ff88"),
-            ("05", "Rollback (if fail)", "Restores known-good state", "ff2d55"),
-            ("06", "AI Report", "LLaMA 3 generates briefing", "b388ff"),
+            ("01", "Quarantine SAST", "LLaMA-3 hunts Zero-Days", "b388ff"),
+            ("02", "npm audit", "Scans for known CVEs", "00f5ff"),
+            ("03", "AI Report", "Generates risk intel", "ffd60a"),
+            ("04", "Backup & Patch", "Applies safe upgrades", "4a7a8a"),
+            ("05", "Self-Healing", "Validates & Rolls back if broken", "00ff88"),
         ]
         for num, step, desc, col in steps:
             st.markdown(
@@ -652,84 +614,3 @@ with intel_tab:
             """,
                 unsafe_allow_html=True,
             )
-
-
-# ── AI-SAST (ZERO-DAY) TAB ────────────────────────────────────────────────────
-with sast_tab:
-    section_header("🛡️", "AI-SAST Zero-Day Hunter")
-    st.markdown(
-        """
-    <div style="font-family:'Rajdhani',sans-serif;font-size:0.95rem;color:#c8e6f0;line-height:1.6;margin-bottom:1rem">
-        Upload a raw <span style="color:#00f5ff">.js file</span> or select a test scenario below. The file is temporarily written to a quarantine zone, where <strong>Groq LLaMA-3</strong> reads the raw Abstract Syntax Tree to hunt for zero-day payloads, malicious obfuscation, and dangerous evaluation patterns.
-    </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    colA, colB = st.columns(2)
-
-    with colA:
-        test_pkg = st.selectbox(
-            "🧪 Simulate Target Environment",
-            [
-                "React-Colors-Utils (Zero-Day Malicious)",
-                "Express Boilerplate (Safe)",
-                "Axios Custom (Suspicious)",
-            ],
-        )
-
-    with colB:
-        uploaded_file = st.file_uploader("📂 Or Upload Custom .js File", type=["js"])
-
-    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
-
-    if st.button("🔍 RUN HEURISTIC SAST SCAN", use_container_width=True):
-        with st.status("Analyzing Abstract Syntax Tree...", expanded=True) as status:
-            st.write("Initializing LLaMA-3 Security Ruleset...")
-            time.sleep(0.5)
-            st.write("Extracting payload logic...")
-
-            target_file_path = "temp_quarantine_scan.js"
-
-            # File handling logic: priority goes to uploaded files
-            if uploaded_file is not None:
-                st.write("Writing uploaded file to ephemeral quarantine sandbox...")
-                with open(target_file_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-            else:
-                st.write(f"Generating mock sandbox for '{test_pkg}'...")
-                # Generate mock code based on dropdown selection
-                if "Malicious" in test_pkg:
-                    code_content = "const target = Buffer.from('cHJvY2Vzcy5lbnYuR1JPUV9BUElfS0VZ', 'base64').toString('utf-8');\neval(target);"
-                elif "Safe" in test_pkg:
-                    code_content = "const express = require('express');\nconst app = express();\napp.listen(3000, () => console.log('Ready'));"
-                else:
-                    code_content = "var config = { validateStatus: function (status) { return status >= 200 && status < 300; } };"
-
-                with open(target_file_path, "w") as f:
-                    f.write(code_content)
-
-            time.sleep(0.5)
-            st.write("Pushing context to Groq API...")
-
-            # Execute the AI SAST Scan
-            is_safe, sast_report = ai_sast.analyze_raw_code(target_file_path)
-
-            # Cleanup the temporary file immediately after reading
-            if os.path.exists(target_file_path):
-                os.remove(target_file_path)
-
-            status.update(label="SAST Audit Complete", state="complete", expanded=False)
-
-        # Display the Verdict
-        st.divider()
-        if is_safe:
-            st.success(
-                "✅ **VERDICT: SAFE** - Code passes heuristic behavioral analysis."
-            )
-        else:
-            st.error(
-                "🚨 **VERDICT: MALICIOUS/SUSPICIOUS** - Installation strictly blocked."
-            )
-
-        st.code(sast_report, language="text")
