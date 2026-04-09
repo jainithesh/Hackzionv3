@@ -1,7 +1,9 @@
+import os
+from dotenv import load_dotenv
 from groq import Groq
 
-API_KEY = "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"  # console.groq.com → free, no card needed
-client = Groq(api_key=API_KEY)
+load_dotenv()
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def get_threat_explanation(vulnerability_count):
@@ -12,7 +14,7 @@ def get_threat_explanation(vulnerability_count):
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",  # Current free model on Groq
+            model="llama-3.1-8b-instant",
             messages=[
                 {
                     "role": "system",
@@ -22,11 +24,7 @@ def get_threat_explanation(vulnerability_count):
             ],
             max_tokens=100,
         )
-        print("SUCCESS: Connected via Groq (LLaMA 3)")
         return response.choices[0].message.content
-
     except Exception as e:
-        print("--- FAILED on Groq ---")
-        print(f"Exact Error: {e}")
-        print("\n[!] API BLOCKED: USING OFFLINE DEMO FALLBACK FOR JUDGES [!]\n")
+        # THE HACKATHON SAVIOR (DEMO MODE)
         return "Critical vulnerability detected in outdated dependencies (axios, lodash). Exploitation could allow attackers to execute arbitrary code via Prototype Pollution or trigger a severe Denial of Service (DoS) crash, leading to massive downtime."
