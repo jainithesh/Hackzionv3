@@ -350,7 +350,7 @@ with dash_tab:
                 )
 
                 st.markdown(
-                    f"""
+                    """
                 <div style="background:#1a040a;border:1px solid #ff2d55;border-radius:2px;padding:1rem;margin:1rem 0">
                     <div style="font-family:'Orbitron',monospace;font-size:1rem;color:#ff2d55;letter-spacing:0.1em;margin-bottom:8px">
                         🚨 ZERO-DAY THREAT DETECTED IN QUARANTINE

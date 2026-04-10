@@ -49,10 +49,7 @@ def analyze_raw_code(file_path):
         return True, result
 
     except Exception as e:
-        return False, "Error analyzing code."
-
-
-# 👇 ADD THIS NEW FUNCTION TO THE BOTTOM 👇
+        return False, f"Error analyzing code. Error: {e}"
 
 
 def sanitize_payload(file_path):
