@@ -2,6 +2,19 @@ import subprocess
 import json
 import os
 import shutil
+import docker
+
+# Initialize Docker Client for Kernel-Level Sandboxing
+try:
+    docker_client = docker.from_env()
+    # Pre-pull the image so the live demo doesn't hang waiting for a download
+    docker_client.images.pull("node:18-alpine")
+    DOCKER_AVAILABLE = True
+except Exception as e:
+    print(
+        f"🚨 CRITICAL: Docker daemon not running. Please start Docker Desktop. Error: {e}"
+    )
+    DOCKER_AVAILABLE = False
 
 TARGET_DIR = "./target_app"
 PKG_PATH = "./target_app/package.json"
@@ -9,7 +22,10 @@ BACKUP_PATH = "./target_app/package.json.bak"
 
 
 def run_vulnerability_scan():
-    """PHASE 1: Standard CVE Audit"""
+    """
+    PHASE 1: Standard CVE Audit
+    (Safe to run natively as it just analyzes metadata and does not execute untrusted code)
+    """
     try:
         result = subprocess.run(
             ["npm", "audit", "--json"],
@@ -36,36 +52,71 @@ def backup_file():
 
 
 def apply_patch_and_verify():
-    """PHASE 4: Patch, Test, and Autonomous Rollback"""
+    """
+    PHASE 4: Kernel-Level Sandboxing.
+    Patches and tests execute INSIDE a disposable container to protect the host machine.
+    """
+    if not DOCKER_AVAILABLE:
+        print("Docker not detected. Cannot proceed with safe patching.")
+        return False
+
     try:
-        subprocess.run(
-            ["npm", "install", "axios@latest", "lodash@latest"],
-            cwd=TARGET_DIR,
-            shell=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        test_result = subprocess.run(
-            ["npm", "test"], cwd=TARGET_DIR, shell=True, capture_output=True
+        # Docker requires absolute paths for bind mounts on Windows
+        target_abs_path = os.path.abspath(TARGET_DIR)
+        mounts = {target_abs_path: {"bind": "/sandbox", "mode": "rw"}}
+
+        print("[+] Spawning isolated Alpine container for patching...")
+        # 1. Apply patches safely inside the container
+        docker_client.containers.run(
+            "node:18-alpine",
+            "npm install axios@latest lodash@latest",
+            volumes=mounts,
+            working_dir="/sandbox",
+            remove=True,  # Vaporize container immediately after execution
         )
 
-        if test_result.returncode != 0:
+        print("[+] Running test suite inside isolated container...")
+        # 2. Run the test suite inside the container
+        test_passed = True
+        try:
+            docker_client.containers.run(
+                "node:18-alpine",
+                "npm test",
+                volumes=mounts,
+                working_dir="/sandbox",
+                remove=True,
+            )
+        except docker.errors.ContainerError:
+            # If the test command exits with a non-zero code (tests fail), it throws this error
+            test_passed = False
+
+        # 3. Autonomous Rollback
+        if not test_passed:
+            print("[-] Tests failed! Initiating autonomous rollback...")
             if os.path.exists(BACKUP_PATH):
                 shutil.copy(BACKUP_PATH, PKG_PATH)
-                subprocess.run(
-                    ["npm", "install"],
-                    cwd=TARGET_DIR,
-                    shell=True,
-                    stdout=subprocess.DEVNULL,
+                # Restore dependencies inside the sandbox
+                docker_client.containers.run(
+                    "node:18-alpine",
+                    "npm install",
+                    volumes=mounts,
+                    working_dir="/sandbox",
+                    remove=True,
                 )
             return False  # Rolled back
+
         return True  # Secured
-    except Exception:
+
+    except Exception as e:
+        print(f"Docker Execution Error: {e}")
         return False
 
 
 def pre_install_scan(package_name, version="latest"):
-    """ZERO-TRUST: Dry-run dependency resolution to block malicious postinstall scripts"""
+    """
+    ZERO-TRUST: Dry-run dependency resolution.
+    (Safe to run natively because --package-lock-only prevents any code execution)
+    """
     quarantine_dir = "temp_quarantine"
     os.makedirs(quarantine_dir, exist_ok=True)
     try:
