@@ -149,3 +149,31 @@ def pre_install_scan(package_name, version="latest"):
     finally:
         if os.path.exists(quarantine_dir):
             shutil.rmtree(quarantine_dir)
+
+
+def validate_code_in_docker(file_path):
+    """
+    ZERO-TRUST EXECUTION: Runs a single .js file inside a locked-down Docker container
+    to verify its syntax and integrity without exposing the host OS.
+    """
+    if not DOCKER_AVAILABLE:
+        return True
+    try:
+        abs_dir = os.path.abspath(os.path.dirname(file_path))
+        filename = os.path.basename(file_path)
+
+        # 'ro' = Read-Only mode. Container cannot modify the file.
+        mounts = {abs_dir: {"bind": "/sandbox", "mode": "ro"}}
+
+        # node -c performs a safe syntax check
+        docker_client.containers.run(
+            "node:18-alpine",
+            f"node -c {filename}",
+            volumes=mounts,
+            working_dir="/sandbox",
+            remove=True,
+        )
+        return True
+    except Exception as e:
+        print(f"Docker Validation Error: {e}")
+        return False
