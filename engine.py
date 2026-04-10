@@ -67,12 +67,13 @@ def apply_patch_and_verify():
 
         print("[+] Spawning isolated Alpine container for patching...")
         # 1. Apply patches safely inside the container
+        # 1. Apply patches safely inside the container
         docker_client.containers.run(
             "node:18-alpine",
-            "npm install axios@latest lodash@latest",
+            "npm install axios@latest lodash@latest",  # <--- HARDCODED
             volumes=mounts,
             working_dir="/sandbox",
-            remove=True,  # Vaporize container immediately after execution
+            remove=True,
         )
 
         print("[+] Running test suite inside isolated container...")

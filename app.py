@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── INITIALIZE SESSION STATE FOR LIVE LOGS ────────────────────────────────────
+# ── INITIALIZE SESSION STATE FOR LIVE LOGS & THREAT INTEL ─────────────────────
 if "sys_logs" not in st.session_state:
     st.session_state.sys_logs = [
         {
@@ -27,6 +27,12 @@ if "sys_logs" not in st.session_state:
             "msg": "Awaiting target acquisition...",
         },
     ]
+
+# Store the AI SAST report so the Threat Intel tab can read it dynamically
+if "sast_intel" not in st.session_state:
+    st.session_state.sast_intel = None
+if "sast_status" not in st.session_state:
+    st.session_state.sast_status = "PENDING"
 
 
 def add_log(level, msg):
@@ -274,8 +280,11 @@ with dash_tab:
         type="primary",
         use_container_width=True,
     ):
-        # Reset logs for new run
+        # Reset logs & SAST state for new run
         st.session_state.sys_logs = []
+        st.session_state.sast_intel = None
+        st.session_state.sast_status = "PENDING"
+
         add_log("info", "System Operator initiated Full Spectrum Audit.")
         terminal_placeholder.markdown(render_terminal(), unsafe_allow_html=True)
 
@@ -319,6 +328,10 @@ with dash_tab:
 
             is_safe, sast_report = ai_sast.analyze_raw_code(target_file_path)
 
+            # SAVE SAST RESULTS TO SESSION STATE FOR THREAT INTEL TAB
+            st.session_state.sast_intel = sast_report
+            st.session_state.sast_status = "SAFE" if is_safe else "MALICIOUS"
+
             if not is_safe:
                 # ZERO-DAY DETECTED
                 add_log("err", "🚨 ZERO-DAY PAYLOAD DETECTED IN QUARANTINE!")
@@ -349,7 +362,6 @@ with dash_tab:
                 """,
                     unsafe_allow_html=True,
                 )
-                st.code(sast_report, language="text")
 
                 # --- PHASE 1.5: AI SANITIZATION ---
                 st.markdown(
@@ -477,7 +489,7 @@ with dash_tab:
                     unsafe_allow_html=True,
                 )
 
-                # --- PHASE 3: AI ANALYST (THREAT REPORT) ---
+                # --- PHASE 3: AI ANALYST ---
                 st.markdown(
                     """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#ffd60a;margin-top:0.8rem">
                     🧠 PHASE 3 · GENERATING MANAGER INTEL REPORT...</div>""",
@@ -671,41 +683,87 @@ with intel_tab:
     i_col1, i_col2 = st.columns([3, 2])
 
     with i_col1:
-        section_header("📦", "Known Dependency Risk", "ffd60a")
-        deps = [
-            (
-                "axios",
-                "0.18.0",
-                "1.7.9",
-                "SSRF · ReDoS · Unvalidated Redirect",
-                "HIGH",
-                "ff2d55",
-            ),
-            (
-                "lodash",
-                "4.17.15",
-                "4.17.21",
-                "Prototype Pollution · Code Injection",
-                "HIGH",
-                "ffd60a",
-            ),
-        ]
-        for pkg, cur, safe, cves, sev, col in deps:
-            st.markdown(
-                f"""
-            <div style="background:#061120;border:1px solid #{col}44;border-radius:2px;padding:0.9rem 1.1rem;margin-bottom:0.5rem">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                    <span style="font-family:'Orbitron',monospace;font-size:0.9rem;color:#{col}">{pkg}</span>
-                    <span style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;padding:2px 8px;border:1px solid #{col};color:#{col}">{sev}</span>
+        # DYNAMIC LOGIC: Check if it's a single file upload/scenario or the legacy project
+        if custom_upload is not None or "New Upload" in target_scenario:
+            section_header("📄", "AI-SAST Payload Analysis", "b388ff")
+
+            # Check if a scan has actually been run yet
+            if st.session_state.sast_intel is None:
+                st.markdown(
+                    """
+                <div style="background:#061120;border:1px dashed #b388ff44;border-radius:2px;padding:2rem;text-align:center;">
+                    <span style="font-family:'Share Tech Mono',monospace;font-size:0.85rem;color:#4a7a8a;">
+                        ◈ AWAITING SAST HEURISTIC SCAN ◈<br><br>
+                        Select a file and initiate the security audit to generate a Zero-Day Threat Profile.
+                    </span>
                 </div>
-                <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a">
-                    INSTALLED: <span style="color:#ff2d55">{cur}</span> &nbsp;→&nbsp;
-                    PATCHED:   <span style="color:#00ff88">{safe}</span>
+                """,
+                    unsafe_allow_html=True,
+                )
+            else:
+                # Dynamically set the color based on if the AI found it SAFE or MALICIOUS
+                status_color = (
+                    "00ff88" if st.session_state.sast_status == "SAFE" else "ff2d55"
+                )
+
+                # Render the nice header box
+                st.markdown(
+                    f"""
+                <div style="background:#061120;border:1px solid #{status_color}44;border-left:3px solid #{status_color};border-radius:2px;padding:1rem;margin-bottom:1rem">
+                    <div style="font-family:'Orbitron',monospace;font-size:1rem;color:#{status_color};letter-spacing:0.1em;margin-bottom:4px">
+                        VERDICT: {st.session_state.sast_status}
+                    </div>
+                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#4a7a8a;">
+                        GROQ LLaMA-3 STATIC APPLICATION SECURITY TESTING
+                    </div>
                 </div>
-            </div>
-            """,
-                unsafe_allow_html=True,
-            )
+                """,
+                    unsafe_allow_html=True,
+                )
+
+                # Render the raw AI report using native st.markdown so bullet points and bolding work!
+                st.markdown(st.session_state.sast_intel)
+
+        else:
+            # LEGACY PROJECT LOGIC
+            section_header("📦", "Known Dependency Risk", "ffd60a")
+            deps = [
+                (
+                    "axios",
+                    "0.18.0",
+                    "1.7.9",
+                    "SSRF · ReDoS · Unvalidated Redirect",
+                    "HIGH",
+                    "ff2d55",
+                ),
+                (
+                    "lodash",
+                    "4.17.15",
+                    "4.17.21",
+                    "Prototype Pollution · Code Injection",
+                    "HIGH",
+                    "ffd60a",
+                ),
+            ]
+            for pkg, cur, safe, cves, sev, col in deps:
+                st.markdown(
+                    f"""
+                <div style="background:#061120;border:1px solid #{col}44;border-radius:2px;padding:0.9rem 1.1rem;margin-bottom:0.5rem">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                        <span style="font-family:'Orbitron',monospace;font-size:0.9rem;color:#{col}">{pkg}</span>
+                        <span style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;padding:2px 8px;border:1px solid #{col};color:#{col}">{sev}</span>
+                    </div>
+                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a8a">
+                        INSTALLED: <span style="color:#ff2d55">{cur}</span> &nbsp;→&nbsp;
+                        PATCHED:   <span style="color:#00ff88">{safe}</span>
+                    </div>
+                    <div style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:#4a7a8a;margin-top:4px">
+                        VECTORS: {cves}
+                    </div>
+                </div>
+                """,
+                    unsafe_allow_html=True,
+                )
 
     with i_col2:
         section_header("⚙️", "Zero-Trust Architecture", "00ff88")
