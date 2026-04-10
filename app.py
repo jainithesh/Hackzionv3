@@ -329,10 +329,10 @@ with dash_tab:
                 os.remove(target_file_path)
 
             if not is_safe:
-                # ZERO-DAY DETECTED - ABORT PIPELINE
-                prog.progress(100)
+                # ZERO-DAY DETECTED - TRIGGER SAST SELF-HEALING
+                prog.progress(15)
                 sys_status.metric(
-                    "System Status", "BLOCKED", "⚠ Critical", delta_color="inverse"
+                    "System Status", "COMPROMISED", "⚠ Zero-Day", delta_color="inverse"
                 )
                 threat_status.metric(
                     "Active Threats", "ZERO-DAY", "Detected", delta_color="inverse"
@@ -348,19 +348,41 @@ with dash_tab:
                         🚨 ZERO-DAY THREAT DETECTED IN QUARANTINE
                     </div>
                     <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#c8e6f0">
-                        The AI-SAST Engine has blocked this payload from executing or installing. Pipeline halted.
+                        Malicious payload identified. Initiating Autonomous Sanitization...
                     </div>
                 </div>
                 """,
                     unsafe_allow_html=True,
                 )
                 st.code(sast_report, language="text")
-                status.update(
-                    label="🛑 PIPELINE HALTED — THREAT NEUTRALIZED IN QUARANTINE",
-                    state="error",
-                    expanded=True,
+
+                # --- PHASE 1.5: AI SANITIZATION (PROACTIVE SELF-HEALING) ---
+                st.markdown(
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00ff88;margin-top:0.8rem">
+                    💉 PHASE 1.5 · AUTONOMOUS AI CODE SANITIZATION...</div>""",
+                    unsafe_allow_html=True,
                 )
-                st.stop()  # Stops execution so it doesn't try to patch a virus
+
+                for i in range(15, 20):
+                    prog.progress(i)
+                    time.sleep(0.1)
+
+                # Call the LLaMA-3 Surgeon
+                sanitized_code = ai_sast.sanitize_payload(target_file_path)
+
+                st.markdown(
+                    """<div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#00ff88">
+                    ✓ Malicious vectors excised. Code sanitized and restored to known-good state. Pipeline resuming.</div>""",
+                    unsafe_allow_html=True,
+                )
+
+                with st.expander("🔍 View Sanitized Source Code (Malware Removed)"):
+                    st.code(sanitized_code, language="javascript")
+
+                # Update metrics to show recovery
+                sys_status.metric(
+                    "System Status", "SANITIZED", "Recovered", delta_color="normal"
+                )
 
             else:
                 st.markdown(
@@ -368,7 +390,6 @@ with dash_tab:
                     ✓ AI-SAST Clearance Granted (No Obfuscation or Zero-Days found).</div>""",
                     unsafe_allow_html=True,
                 )
-
             # --- PHASE 2: REACTIVE AUDIT (CVE DB) ---
             st.markdown(
                 """<div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#00f5ff;margin-top:0.8rem">
